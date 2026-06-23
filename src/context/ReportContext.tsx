@@ -156,6 +156,7 @@ export function ReportProvider({ children }: { children: ReactNode }) {
         type,
         title,
         summary,
+        poiName: EDIT_POI.name,
         createdAt: new Date().toISOString(),
         status: 'pending',
       },

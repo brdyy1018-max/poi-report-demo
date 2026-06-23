@@ -17,14 +17,28 @@ import { FieldLabel, TextArea, TextInput } from '../components/ui/FormFields';
 import { useReport } from '../context/ReportContext';
 import { EDIT_POI, EDIT_STATUS_OPTIONS, PHONE_REGIONS } from '../mock/poiData';
 import { EDIT_POI_CATEGORY, formatCategoryPath } from '../mock/categoryTreeData';
-import type { BusinessStatus, PhoneEntry } from '../types';
+import type { BusinessStatus, PhoneEntry, ReportType } from '../types';
 
-function useFieldSave(canSave: boolean, onSave: () => void) {
+type EditSubmitMeta = {
+  type: ReportType;
+  title: string;
+  summary: string;
+  /** 嵌套编辑（如 status → hours）保存后返回，不跳成功页 */
+  returnTo?: string;
+};
+
+function useFieldSave(canSave: boolean, onSave: () => void, submission: EditSubmitMeta) {
   const navigate = useNavigate();
+  const { addSubmission } = useReport();
   const submit = () => {
     if (!canSave) return;
     onSave();
-    navigate('/report');
+    if (submission.returnTo) {
+      navigate(submission.returnTo);
+      return;
+    }
+    addSubmission(submission.type, submission.title, submission.summary);
+    navigate('/success?type=suggest-edit');
   };
   return { submit };
 }
@@ -39,13 +53,16 @@ export function EditNamePage() {
 
   const canSubmit = correctName.trim().length > 0 && photos.length > 0;
 
-  const { submit } = useFieldSave(canSubmit, () =>
-    updateEditInfoDraft({
-      name: correctName.trim(),
-      branchName: branchName.trim(),
-      note,
-      photos,
-    }),
+  const { submit } = useFieldSave(
+    canSubmit,
+    () =>
+      updateEditInfoDraft({
+        name: correctName.trim(),
+        branchName: branchName.trim(),
+        note,
+        photos,
+      }),
+    { type: 'edit-name', title: 'Modify Name', summary: correctName.trim() },
   );
 
   return (
@@ -100,11 +117,17 @@ export function EditStatusPage() {
     statusChanged &&
     isStatusSubmitReady(selected, { openingDate, hasHours });
 
-  const { submit } = useFieldSave(canSubmit, () =>
-    updateEditInfoDraft({
-      businessStatus: selected,
-      openingDate: selected === 'coming-soon' ? openingDate : '',
-    }),
+  const selectedLabel =
+    EDIT_STATUS_OPTIONS.find((o) => o.value === selected)?.label ?? selected;
+
+  const { submit } = useFieldSave(
+    canSubmit,
+    () =>
+      updateEditInfoDraft({
+        businessStatus: selected,
+        openingDate: selected === 'coming-soon' ? openingDate : '',
+      }),
+    { type: 'edit-status', title: 'Modify Status', summary: selectedLabel },
   );
 
   return (
@@ -147,8 +170,10 @@ export function EditAddressPage() {
 
   const canSubmit = address.trim().length > 0;
 
-  const { submit } = useFieldSave(canSubmit, () =>
-    updateEditInfoDraft({ location: address.trim(), note, photos }),
+  const { submit } = useFieldSave(
+    canSubmit,
+    () => updateEditInfoDraft({ location: address.trim(), note, photos }),
+    { type: 'edit-address', title: 'Modify Address/Coordinates', summary: address.trim() },
   );
 
   useEffect(() => {
@@ -220,8 +245,10 @@ export function EditCategoryPage() {
   const selectedDisplay = formatCategoryPath(selectedPath);
   const hasChange = selectedDisplay !== currentDisplay;
 
-  const { submit } = useFieldSave(hasChange, () =>
-    updateEditInfoDraft({ category: selectedDisplay }),
+  const { submit } = useFieldSave(
+    hasChange,
+    () => updateEditInfoDraft({ category: selectedDisplay }),
+    { type: 'edit-category', title: 'Modify Category', summary: selectedDisplay },
   );
 
   return (
@@ -268,7 +295,7 @@ export function EditCategoryPage() {
 /** 05 Modify / Add Phone Number */
 export function EditPhonePage() {
   const navigate = useNavigate();
-  const { editInfoDraft, updateEditInfoDraft } = useReport();
+  const { editInfoDraft, updateEditInfoDraft, addSubmission } = useReport();
   const [phones, setPhones] = useState<PhoneEntry[]>(
     editInfoDraft.phones.length ? editInfoDraft.phones.map((p) => ({ ...p })) : [{ id: 'p1', areaCode: '', number: '' }],
   );
@@ -280,7 +307,9 @@ export function EditPhonePage() {
   const submit = () => {
     if (!canSubmit) return;
     updateEditInfoDraft({ phones, note, photos });
-    navigate('/report');
+    const summary = phones.map((p) => `${p.areaCode} ${p.number}`.trim()).join(', ');
+    addSubmission('edit-phone', 'Modify/Add Phone Number', summary || 'Phone updated');
+    navigate('/success?type=suggest-edit');
   };
 
   return (
@@ -320,7 +349,7 @@ export function EditHoursPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const backTo = params.get('return') || '/report';
-  const { editInfoDraft, updateEditInfoDraft } = useReport();
+  const { editInfoDraft, updateEditInfoDraft, addSubmission } = useReport();
 
   const [regularSlots, setRegularSlots] = useState(
     editInfoDraft.regularHourSlots.length
@@ -330,11 +359,18 @@ export function EditHoursPage() {
 
   const canSave = regularSlots.length > 0;
 
+  const isNestedReturn = backTo.startsWith('/edit/') && backTo !== '/edit/hours';
+
   const save = () => {
     if (!canSave) return;
     const hoursLines = buildHoursSummary(regularSlots);
     updateEditInfoDraft({ regularHourSlots: regularSlots, hoursLines });
-    navigate(backTo);
+    if (isNestedReturn) {
+      navigate(backTo);
+      return;
+    }
+    addSubmission('edit-hours', 'Modify Business Hours', hoursLines.join(', '));
+    navigate('/success?type=suggest-edit');
   };
 
   return (
@@ -362,6 +398,11 @@ export function EditPhotosPage() {
   const { submit } = useFieldSave(
     photos.length > 0,
     () => updateEditInfoDraft({ photos: photos.map((p) => p.id) }),
+    {
+      type: 'edit-photos',
+      title: 'Add photo',
+      summary: `${photos.length} photo${photos.length === 1 ? '' : 's'} uploaded`,
+    },
   );
 
   const PHOTO_TYPES = ['Exterior', 'Interior', 'Menu', 'Storefront sign', 'Other'];
@@ -404,7 +445,11 @@ export function EditPhotosPage() {
 
 export function EditIdentityPage() {
   const { editInfoDraft } = useReport();
-  const { submit } = useFieldSave(!!editInfoDraft.identity, () => undefined);
+  const { submit } = useFieldSave(!!editInfoDraft.identity, () => undefined, {
+    type: 'edit-identity',
+    title: 'Your identity',
+    summary: editInfoDraft.identity ?? 'Identity confirmed',
+  });
 
   return (
     <EditFormLayout title="Your identity" canSubmit={!!editInfoDraft.identity} onSubmit={submit}>
@@ -416,7 +461,7 @@ export function EditIdentityPage() {
 /** 06 子页 — Edit hours（单日编辑） */
 export function EditHoursDayPage() {
   const navigate = useNavigate();
-  const { editInfoDraft, updateEditInfoDraft } = useReport();
+  const { editInfoDraft, updateEditInfoDraft, addSubmission } = useReport();
   const [mode, setMode] = useState<'24h' | 'closed' | 'specific'>('specific');
   const [slots, setSlots] = useState([{ open: '10:00', close: '17:00' }]);
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -452,7 +497,8 @@ export function EditHoursDayPage() {
     const next = [...editInfoDraft.hoursLines];
     next[activeDay] = line;
     updateEditInfoDraft({ hoursLines: next });
-    navigate('/report');
+    addSubmission('edit-hours', 'Modify Business Hours', line);
+    navigate('/success?type=suggest-edit');
   };
 
   return (
