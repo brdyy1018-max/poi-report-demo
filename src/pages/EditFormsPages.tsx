@@ -113,8 +113,11 @@ export function EditStatusPage() {
       canSubmit={canSubmit}
       onSubmit={submit}
       showExtras={false}
+      showCurrentName={false}
     >
       <div className="space-y-5">
+        <ReadOnlyField label="Current name" value={EDIT_POI.name} />
+
         <BusinessStatusFields
           status={selected}
           openingDate={openingDate}
@@ -335,8 +338,18 @@ export function EditHoursPage() {
   };
 
   return (
-    <EditFormLayout title="Business hours" canSubmit={canSave} onSubmit={save} backTo={backTo} showExtras={false}>
-      <BusinessHoursEditor regularSlots={regularSlots} onRegularChange={setRegularSlots} />
+    <EditFormLayout
+      title="Business hours"
+      canSubmit={canSave}
+      onSubmit={save}
+      backTo={backTo}
+      showExtras={false}
+      showCurrentName={false}
+    >
+      <div className="space-y-5">
+        <ReadOnlyField label="Current name" value={EDIT_POI.name} />
+        <BusinessHoursEditor regularSlots={regularSlots} onRegularChange={setRegularSlots} />
+      </div>
     </EditFormLayout>
   );
 }
