@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { PageHeader } from '../components/layout/PageHeader';
 import { useReport } from '../context/ReportContext';
 import type { SubmissionRecord } from '../types';
 
@@ -55,17 +56,28 @@ export function SubmitSuccessPage() {
   const peopleHelped = helpedCount.toLocaleString();
   const latestSubmission = submissions[0];
 
+  const handleBack = () => {
+    if (type === 'add-place') navigate('/');
+    else if (type === 'suggest-edit') navigate('/report');
+    else navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-neutral-100 pb-10">
-      <header className="sticky top-0 z-10 flex items-center justify-end bg-neutral-100/90 px-4 py-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={() => navigate('/profile?tab=contributions')}
-          className="text-[15px] font-semibold text-tiktok active:opacity-80"
-        >
-          My contribution
-        </button>
-      </header>
+      <PageHeader
+        title=""
+        onBack={handleBack}
+        light
+        right={
+          <button
+            type="button"
+            onClick={() => navigate('/profile?tab=contributions')}
+            className="text-[15px] font-semibold text-tiktok active:opacity-80"
+          >
+            My contribution
+          </button>
+        }
+      />
 
       <div className="relative mx-4 mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-rose-100 via-pink-50 to-orange-50 px-6 py-10">
         <div className="pointer-events-none absolute inset-0 opacity-40">
