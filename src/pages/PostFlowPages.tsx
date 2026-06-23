@@ -215,10 +215,8 @@ export function PostCreatePage() {
                 'New location (publish)',
                 `${postLocation.name} — submitted with video publish`,
               );
-              navigate('/success?type=add-place');
-              return;
             }
-            navigate('/success');
+            navigate('/');
           }}
           className="flex-1 rounded-full bg-tiktok py-3.5 text-[15px] font-semibold text-white"
         >
