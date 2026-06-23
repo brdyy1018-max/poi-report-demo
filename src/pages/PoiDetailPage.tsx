@@ -15,6 +15,7 @@ export function PoiDetailPage() {
   const menuItems = useMemo(
     () => [
       { label: 'Suggest an edit', onClick: () => navigate('/report') },
+      { label: 'Add new location', onClick: () => navigate('/add-place?step=1') },
       { label: 'Report a place', onClick: () => navigate('/report') },
       { label: 'Leave feedback', onClick: () => navigate('/feedback') },
       { label: 'My contribution', onClick: () => navigate('/profile') },

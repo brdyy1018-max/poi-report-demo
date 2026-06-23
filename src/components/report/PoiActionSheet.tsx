@@ -22,6 +22,12 @@ export function PoiActionSheet() {
           onClick={() => go('/report')}
         />
         <SheetMenuItem
+          icon="📍"
+          label="Add new location"
+          description="Add a place that is not on the map"
+          onClick={() => go('/add-place?step=1')}
+        />
+        <SheetMenuItem
           icon="🚩"
           label="Report"
           description="Something wrong with this place"
