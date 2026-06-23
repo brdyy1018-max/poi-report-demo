@@ -26,7 +26,7 @@ export const DEMO_SCREENS: DemoScreen[] = [
   { group: 'POI Entry', title: 'Rooms', path: '/rooms' },
   { group: '字段编辑', title: 'Modify Name', path: '/edit/name' },
   { group: '字段编辑', title: 'Modify Category', path: '/edit/category' },
-  { group: '字段编辑', title: 'Location / Address', path: '/edit/address' },
+  { group: '字段编辑', title: 'Modify Address/Coordinates', path: '/edit/address' },
   { group: '字段编辑', title: 'Modify Business Hours', path: '/edit/hours' },
   { group: '字段编辑', title: 'Modify/Add Phone Number', path: '/edit/phone' },
   { group: '字段编辑', title: 'Add photo', path: '/edit/photos' },

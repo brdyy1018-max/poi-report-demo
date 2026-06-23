@@ -6,10 +6,12 @@ export function AddressAutocomplete({
   value,
   onChange,
   placeholder = 'Enter address',
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const suggestions = useMemo(
@@ -27,7 +29,7 @@ export function AddressAutocomplete({
         }}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-google focus:ring-2 focus:ring-google/20"
+        className={`w-full rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-google focus:ring-2 focus:ring-google/20 ${className ?? ''}`}
       />
       {open && suggestions.length > 0 && (
         <ul className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg">

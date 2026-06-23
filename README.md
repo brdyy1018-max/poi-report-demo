@@ -2,6 +2,14 @@
 
 TikTok 风格 POI 提报完整交互 Demo，按 **Step 1 · Entrance** 流程图组织两条入口。
 
+## 在线 Demo（GitHub Pages）
+
+**https://brdyy1018-max.github.io/poi-report-demo/**
+
+仓库：https://github.com/brdyy1018-max/poi-report-demo
+
+推送 `main` 分支后会自动重新部署。
+
 ## 快速开始
 
 ```bash

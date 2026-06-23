@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditSubpageExtras } from './EditSubpageExtras';
+import { ReadOnlyField } from './SupplementaryFields';
 import { PageHeader } from '../layout/PageHeader';
+import { EDIT_POI } from '../../mock/poiData';
 
 /** 修改信息子页 — 右上角 Submit */
 export function HeaderSubmitButton({
@@ -37,6 +39,8 @@ interface EditFormLayoutProps {
   submitLabel?: string;
   /** 是否展示身份模块 */
   showExtras?: boolean;
+  /** 顶部 Current name，默认展示 */
+  showCurrentName?: boolean;
 }
 
 /** Modify * 子页布局 — 字段级编辑，Submit 后回到 Report a place */
@@ -48,6 +52,7 @@ export function EditFormLayout({
   backTo = '/report',
   submitLabel = 'Submit',
   showExtras = true,
+  showCurrentName = true,
 }: EditFormLayoutProps) {
   const navigate = useNavigate();
 
@@ -59,6 +64,7 @@ export function EditFormLayout({
         right={<HeaderSubmitButton disabled={!canSubmit} onClick={onSubmit} label={submitLabel} />}
       />
       <div className="space-y-4 px-4 py-4">
+        {showCurrentName && <ReadOnlyField label="Current name" value={EDIT_POI.name} />}
         {children}
         {showExtras && <EditSubpageExtras />}
       </div>

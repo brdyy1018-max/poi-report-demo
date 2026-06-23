@@ -56,8 +56,6 @@ export function EditNamePage() {
       showExtras={false}
     >
       <div className="space-y-5">
-        <ReadOnlyField label="Current name" value={EDIT_POI.name} />
-
         <div>
           <FieldLabel label="Correct name" required />
           <TextInput
@@ -140,8 +138,15 @@ export function EditAddressPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { editInfoDraft, updateEditInfoDraft, setMapReturnPath } = useReport();
-  const [address, setAddress] = useState(editInfoDraft.location);
-  const { submit } = useFieldSave(address.trim().length > 0, () => updateEditInfoDraft({ location: address.trim() }));
+  const [address, setAddress] = useState(editInfoDraft.location || EDIT_POI.address);
+  const [note, setNote] = useState(editInfoDraft.note);
+  const [photos, setPhotos] = useState<string[]>(editInfoDraft.photos);
+
+  const canSubmit = address.trim().length > 0;
+
+  const { submit } = useFieldSave(canSubmit, () =>
+    updateEditInfoDraft({ location: address.trim(), note, photos }),
+  );
 
   useEffect(() => {
     const next = (location.state as { address?: string })?.address;
@@ -154,12 +159,43 @@ export function EditAddressPage() {
   };
 
   return (
-    <EditFormLayout title="Location" canSubmit={address.trim().length > 0} onSubmit={submit}>
-      <ReadOnlyField label="Current store" value={EDIT_POI.name} />
-      <MiniMapPreview onClick={openMap} editButtonLabel="Edit location" />
-      <div className="rounded-2xl bg-card px-4 py-4">
-        <FieldLabel label="Address" hint="Drag the pin on the map or enter the address" />
-        <AddressAutocomplete value={address} onChange={setAddress} placeholder="Enter address" />
+    <EditFormLayout
+      title="Modify Address/Coordinates"
+      canSubmit={canSubmit}
+      onSubmit={submit}
+      showExtras={false}
+    >
+      <div className="space-y-5">
+        <section>
+          <FieldLabel label="Address & Coordinates" required />
+          <MiniMapPreview onClick={openMap} editButtonLabel="Edit location" />
+          <div className="relative mt-3">
+            <AddressAutocomplete
+              value={address}
+              onChange={setAddress}
+              placeholder="Enter address"
+              className="border-0 bg-neutral-100 pr-10 focus:ring-tiktok/20"
+            />
+            {address.length > 0 && (
+              <button
+                type="button"
+                aria-label="Clear address"
+                onClick={() => setAddress('')}
+                className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-300/80 text-[12px] text-neutral-600 active:bg-neutral-400"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </section>
+
+        <SupplementaryFields
+          note={note}
+          onNoteChange={setNote}
+          photos={photos}
+          onAddPhoto={() => setPhotos((p) => [...p, `photo-${p.length + 1}`])}
+          onRemovePhoto={(i) => setPhotos((p) => p.filter((_, j) => j !== i))}
+        />
       </div>
     </EditFormLayout>
   );
@@ -194,8 +230,6 @@ export function EditCategoryPage() {
         showExtras={false}
       >
         <div className="space-y-5">
-          <ReadOnlyField label="Current store" value={EDIT_POI.name} />
-
           <div>
             <FieldLabel label="Please provide the correct category" required />
             <button
@@ -248,8 +282,6 @@ export function EditPhonePage() {
 
   return (
     <EditFormLayout title="Modify/Add Phone Number" canSubmit={canSubmit} onSubmit={submit} showExtras={false}>
-      <ReadOnlyField label="Current store" value={EDIT_POI.name} />
-
       <EditPhoneList phones={phones} onChange={setPhones} />
 
       <EditPhoneEvidence
@@ -417,6 +449,10 @@ export function EditHoursDayPage() {
         onBack={() => navigate('/report')}
         right={<HeaderSubmitButton onClick={save} />}
       />
+
+      <div className="space-y-4 px-4 pb-4">
+        <ReadOnlyField label="Current name" value={EDIT_POI.name} />
+      </div>
 
       <div className="flex justify-center gap-2 px-4 py-4">
         {days.map((d, i) => (
